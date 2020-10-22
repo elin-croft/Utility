@@ -6,4 +6,4 @@ use only numpy and a few opencv function to enhace a gray scale picture and remo
 ![gray scale picture](./images/middle.jpg)
 ![result](./images/result.jpg)
 
-maybe someday i'll write a im2col version
+maybe someday I'll write a im2col version
