@@ -1,11 +1,12 @@
 import argparse
 import cv2
 import numpy as np
+import max_min_filter
 
 def parse_args(params:list=None):
     parser = argparse.ArgumentParser(description="paramters")
     parser.add_argument('-f', '--file', dest='filename',
-                        default='./elsa.jpg', type=str,
+                        default='./images/elsa.jpg', type=str,
                         help='file name should be something like path/to/you/file.jpg ' \
                             'default set is elsa.jpg')
     parser.add_argument('-c', '--choose', dest='mode',
@@ -43,8 +44,8 @@ def maxfilter(img, kernel):
     for i in range(h):
         for j in range(w):
             center = (h_s + i, w_s + j)
-            if center != 300:
-                max_ele = np.amax(a[center[0] - pading: center[0] + pading, center[1] - pading: center[1] + pading])
+            if a[center] != 300:
+                max_ele = np.amax(a[center[0] - pading: center[0] + pading + 1, center[1] - pading: center[1] + pading + 1])
                 filtered_array[center[0] - pading, center[1] - pading] = max_ele
     return filtered_array
 
@@ -59,8 +60,8 @@ def minfilter(img, kernel):
     for i in range(h):
         for j in range(w):
             center = (h_s + i, w_s + j)
-            if center != -1:
-                min_ele = np.amin(a[center[0] - pading: center[0] + pading, center[1] - pading: center[1] + pading])
+            if a[center] != -1:
+                min_ele = np.amin(a[center[0] - pading: center[0] + pading + 1, center[1] - pading: center[1] + pading + 1])
                 filtered_array[center[0] - pading, center[1] - pading] = min_ele
     return filtered_array
 def get_result(background, origin):
