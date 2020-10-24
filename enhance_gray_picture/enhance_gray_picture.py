@@ -27,7 +27,7 @@ def parse_args(params:list=None):
                         help='show result on your screen\
                             deafult set is False')
     parser.add_argument('--output-name', dest='dst', 
-                        default='result.jpg', type=str,
+                        default='images/result.jpg', type=str,
                         help='save result\
                             default set is result.jpg')
     args = parser.parse_args()
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     filter_size2 = filter_size1 if args.size2 is None else args.size2
     img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
     result = run(img,filter_size1, filter_size2, mode)
-    cv2.imwrite('middle.jpg', img)
+    cv2.imwrite('images/middle.jpg', img)
     cv2.imwrite(output, result)
     if args.show_flag:
         show_picture(img, result)
