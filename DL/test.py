@@ -20,27 +20,6 @@ def predict(input, labels:torch.Tensor):
 
     return result, label, correct
 #root = sys.argv[1]
-f = open('mean_std.pkl', 'rb')
-msd = pickle.load(f)
-f.close()
-#mean = tuple(map(lambda x:round(x ,1), msd['mean']))
-#std = tuple(map(lambda x:round(x ,1), msd['std']))
-mean = msd['mean']
-std = msd['std']
-
-print("mean={}".format(mean))
-print("std={}".format(std))
-
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean, std)
-    ])
-
-test_dataset = datasets.ImageFolder('test',transform=transform)
-classes = tuple(test_dataset.classes)
-print("test dataset label: ", test_dataset.class_to_idx)
-test_data = DataLoader(test_dataset, batch_size=32, shuffle=True)
 
 def eval_model(model, data, device):
     info = {}
@@ -74,13 +53,42 @@ def eval_model(model, data, device):
         #print(info[_class]['FN'])
         print('| {} | acc: {} | recall: {} |'.format(_class, info[_class]['TP']/(info[_class]['TP'] + info[_class]['FP']), info[_class]['TP']/(info[_class]['TP'] + info[_class]['FN'])))
 
-def load_model(weight, device):
-    model = torchvision.models.googlenet(num_classes=len(classes))
+def load_model(models, weight, device):
+    
     model.to(device=device).eval()
     model.load_state_dict(torch.load(weight))
     return model
+
+def test(model, weight, test_data, device):
+    model = load_model(model, weight, device)
+    eval_model(model, test_data, device)
+
 if __name__ == '__main__':
-    weight = 'work_dirs/inception_bn/epoch_200.pth'
-    model = load_model(weight, 'cuda:0')
+    f = open('mean_std.pkl', 'rb')
+    msd = pickle.load(f)
+    f.close()
+    #mean = tuple(map(lambda x:round(x ,1), msd['mean']))
+    #std = tuple(map(lambda x:round(x ,1), msd['std']))
+    mean = msd['mean']
+    std = msd['std']
+
+    print("mean={}".format(mean))
+    print("std={}".format(std))
+
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+        ])
+
+    root = sys.argv[1]
+    test_dataset = datasets.ImageFolder(os.path.join(root, 'test'),transform=transform)
+    classes = tuple(test_dataset.classes)
+    print("test dataset label: ", test_dataset.class_to_idx)
+    test_data = DataLoader(test_dataset, batch_size=32, shuffle=True)
+    
+    model = torchvision.models.googlenet(num_classes=len(classes))
+    weight = 'work_dirs/inception_bn/epoch_200.pth'   
+    model = load_model(model, weight, 'cuda:0')
     eval_model(model, test_data, 'cuda:0')
 

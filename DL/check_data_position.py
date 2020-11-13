@@ -34,4 +34,6 @@ def draw_boxes(dataset_path):
                 cv2.imwrite(os.path.join(savePath, xml_file[:-4] + '_checked.jpg'), img)
 
 
-draw_boxes('/mnt/d/test/model_data/model/weixing_OD_Train/budai_OD/data/dataset')
+if __name__ == "__main__":
+    root = sys.argv[1]
+    draw_boxes(root)
