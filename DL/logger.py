@@ -9,7 +9,6 @@ class logger:
 
         self.log = logging.getLogger(filename)
         sh = logging.StreamHandler()
-        fh = handlers.TimedRotatingFileHandler()
-        logging.add
+        fh = handlers.TimedRotatingFileHandler(filename)
         print(filename)
 

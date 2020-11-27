@@ -8,10 +8,11 @@ try:
 except ModuleNotFoundError as e:
     from xml.etree.ElementTree import ElementTree
 
-def draw_boxes(dataset_path):
+def draw_boxes(dataset_path, flavour=None):
     et = ElementTree()
-    annoPath = 'Annotations'
-    imgPath = 'JPEGImages'
+    if flavour == 'std_voc':
+        annoPath = 'data/VOCdevkit/VOC2007/Annotations'
+        imgPath = 'data/VOCdevkit/VOC2007/JPEGImages'
     files = os.listdir(os.path.join(dataset_path, annoPath))
     for xml_file in files:
         if xml_file.endswith('.xml'):
@@ -27,7 +28,10 @@ def draw_boxes(dataset_path):
                     ymin = int(bbox.find('ymin').text)
                     ymax = int(bbox.find('ymax').text)
                     cv2.rectangle(img, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-                    cv2.putText(img, tyepId, (xmin, ymin + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 2, cv2.LINE_AA)
+                    if ymin > 50:
+                        cv2.putText(img, tyepId, (xmin, ymin - 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                    else:
+                        cv2.putText(img, tyepId, (xmin, ymax + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                     
                 if not os.path.exists(savePath):
                     os.makedirs(savePath)
@@ -36,4 +40,4 @@ def draw_boxes(dataset_path):
 
 if __name__ == "__main__":
     root = sys.argv[1]
-    draw_boxes(root)
+    draw_boxes(root, flavour='std_voc')

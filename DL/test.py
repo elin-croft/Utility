@@ -21,7 +21,7 @@ def predict(input, labels:torch.Tensor):
     return result, label, correct
 #root = sys.argv[1]
 
-def eval_model(model, data, device):
+def eval_model(model, data, classes, device):
     info = {}
     model.eval()
     results = []
@@ -59,16 +59,46 @@ def load_model(models, weight, device):
     model.load_state_dict(torch.load(weight))
     return model
 
-def test(model, weight, test_data, device):
+def load_dataset(root, transform,
+                batch_size=32, shuffle=True, 
+                dataset_type='folder', 
+                *args, **kwargs):
+    """
+    param
+    dataset_type: str
+        should be voc , coco, cifar, minst or folder
+    
+    """
+    if dataset_type == 'folder':
+        dataset = datasets.ImageFolder(root, transform=transform)
+
+    elif dataset_type == 'voc':
+        year = kwargs['year']
+        image_set = kwargs['image_set']
+        dataset = datasets.VOCDetection(root, year=year, image_set=image_set, transform=transform)
+    elif dataset_type == 'coco':
+        annfile = kwargs['annfile']
+        type=kwargs['type']
+        if type == 'detect':
+            dataset = datasets.CocoDetection(root, annFile=annfile, transform=transform)
+        elif type == 'caption':
+            dataset = datasets.CocoCaptions(root, annFile=annfile, transform=transform)
+
+    data = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+
+    return data, dataset.classes, dataset.class_to_idx
+    
+
+def test(model, weight, test_data, classes,device):
     model = load_model(model, weight, device)
-    eval_model(model, test_data, device)
+    eval_model(model, test_data, classes,device)
 
 if __name__ == '__main__':
+    # load mean and std from pkl file
     f = open('mean_std.pkl', 'rb')
     msd = pickle.load(f)
     f.close()
-    #mean = tuple(map(lambda x:round(x ,1), msd['mean']))
-    #std = tuple(map(lambda x:round(x ,1), msd['std']))
+
     mean = msd['mean']
     std = msd['std']
 
@@ -82,13 +112,12 @@ if __name__ == '__main__':
         ])
 
     root = sys.argv[1]
-    test_dataset = datasets.ImageFolder(os.path.join(root, 'test'),transform=transform)
-    classes = tuple(test_dataset.classes)
-    print("test dataset label: ", test_dataset.class_to_idx)
+    test_dataset, classes, class_to_idx = load_dataset(os.path.join(root, 'test'), transform, 32, True)
+    classes = tuple(classes)
+    print("test dataset label: ", class_to_idx)
     test_data = DataLoader(test_dataset, batch_size=32, shuffle=True)
     
     model = torchvision.models.googlenet(num_classes=len(classes))
-    weight = 'work_dirs/inception_bn/epoch_200.pth'   
-    model = load_model(model, weight, 'cuda:0')
-    eval_model(model, test_data, 'cuda:0')
+    weight = 'work_dirs/inception_bn/epoch_200.pth'
+    test(model, weight, test_data, classes, 'cuda:0')
 

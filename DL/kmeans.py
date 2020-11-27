@@ -1,11 +1,12 @@
-import os, sys
-import numpy as np
-from xml.etree.ElementTree import ElementTree
-
 ###################################################
 #                    notice
 #                ratio is w / h
 ###################################################
+
+import os, sys
+import numpy as np
+from xml.etree.ElementTree import ElementTree
+
 
 def get_iou(bboxes, cluster):
     """
@@ -13,9 +14,9 @@ def get_iou(bboxes, cluster):
     bboxes: numpy array with shape of (n, 2)
     n boxes in you dataset
     cluster: numpy array with shape of (k, 2)
-    k centers
+             k centers
     """
-    # we assume that all bbox starts at point (0, 0), so only need width and height of those boxes
+    # we assume that all bbox starts at point (0, 0), so we only need width and height of those boxes
     w_min = np.minimum(bboxes[:, 0, np.newaxis], cluster[np.newaxis, :, 0]) # shape (n, k)
     h_min = np.minimum(bboxes[:, 1, np.newaxis], cluster[np.newaxis, :, 1]) # shape (n, k)
 
@@ -36,6 +37,7 @@ class Kmeans:
         self.k = k
         self.dataset_path = os.path.join(self.root, 'Annotations')
         self.boxes = self.get_boxes()
+
     def get_boxes(self):
         box = []
         et = ElementTree()
