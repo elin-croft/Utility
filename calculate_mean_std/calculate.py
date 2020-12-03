@@ -3,7 +3,7 @@ import cv2
 import os, sys
 from calculate_size import calculate_size
 def calculate(root):
-    h, w = calculate_size(root)
+    h, w = 32, 32
     imgs=[]
     means=[]
     stds=[]
@@ -18,7 +18,7 @@ def calculate(root):
     nparr = np.concatenate(imgs, axis=3)
     for i in range(3):
         pixel = nparr[:,:,i,:].ravel()
-        #means.append(np.mean(pixel))
+        means.append(np.mean(pixel))
         stds.append(np.std(pixel))
     print("mean: ", means)
     print("stds: ", stds)

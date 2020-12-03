@@ -115,16 +115,29 @@ def load_model(model, weight, device):
     model.load_state_dict(torch.load(weight))
     return model
 
-def save_model(model, root, epoch_num, mean_std, eval_flag=True):
+def save_model(model, root, epoch_num, flavour='normal', **kwagrs):
+    """
+    save model
+    Parameters
+    flavour: str
+        normal: save a model in normal way
+        compressed: save a model with other parameters
+    """
     if not os.path.exists(root):
         os.makedirs(root)
-    weight = {}
-    weight['state_dict'] = model.state_dict()
-    weight['mean_std'] = mean_std
-    torch.save(weight, os.path.join(root, 'epoch_{}.pth'.format(epoch_num)))
+    if flavour == 'compressed':
+        weight = {}
+        weight['state_dict'] = model.state_dict()
+        for k, v in kwagrs.items():
+            weight[k] = v
+        torch.save(weight, os.path.join(root, 'epoch_{}.pth'.format(epoch_num)))
+    elif flavour == 'normal':
+        torch.save(model.state_dict(), os.path.join(root, 'epoch_{}.pth'.format(epoch_num)))
 
 
-def train(model, train_data, val_data, classes, device, epochs=200):
+def train(model, train_data, val_data, classes, device, 
+          save_flavour='normal', epochs=200,
+          **kwargs):
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9, weight_decay=9.99999974738e-05)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=160, gamma=0.1)
     lr_list = [optimizer.state_dict()['param_groups'][0]['lr']]
@@ -177,7 +190,7 @@ def train(model, train_data, val_data, classes, device, epochs=200):
         print('lr: ', lr_list[-1])
         print("testing on val dataset")
         info = eval_model(model, val_data, classes, device)
-        save_model(model,'inception_bn', epoch, msd)
+        save_model(model,'inception_bn', epoch, flavour=save_flavour, **kwargs)
         print('='*41)
     info['lr_list'] = lr_list
 
@@ -189,8 +202,6 @@ if __name__ == "__main__":
         f = open('mean_std.pkl', 'rb')
         msd = pickle.load(f)
         f.close()
-        #mean = tuple(map(lambda x:round(x ,1), msd['mean']))
-        #std = tuple(map(lambda x:round(x ,1), msd['std']))
         mean = msd['mean']
         std = msd['std']
 
@@ -223,4 +234,6 @@ if __name__ == "__main__":
     else:
         device = 'cpu'
     model.to(device=device)
-    train(model, train_data, val_data, train_dataset.classes, device)
+    train(model, train_data, val_data, 
+        train_dataset.classes, device,
+        save_flavour='compressed', mean_std=msd)

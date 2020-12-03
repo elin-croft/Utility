@@ -38,15 +38,15 @@ def maxfilter(img, kernel):
     filtered_array = -np.ones((img.shape))
     kernel_size = kernel
     assert kernel_size % 2 != 0
-    pading = kernel // 2
-    a = np.pad(img, ((pading, ), (pading, )), 'constant', constant_values=(-1, -1))
-    h_s, w_s = 0 + pading, 0 + pading
+    padding = kernel // 2
+    a = np.pad(img, ((padding, ), (padding, )), 'constant', constant_values=(-1, -1))
+    h_s, w_s = 0 + padding, 0 + padding
     for i in range(h):
         for j in range(w):
             center = (h_s + i, w_s + j)
             if a[center] != 300:
-                max_ele = np.amax(a[center[0] - pading: center[0] + pading + 1, center[1] - pading: center[1] + pading + 1])
-                filtered_array[center[0] - pading, center[1] - pading] = max_ele
+                max_ele = np.amax(a[center[0] - padding: center[0] + padding + 1, center[1] - padding: center[1] + padding + 1])
+                filtered_array[center[0] - padding, center[1] - padding] = max_ele
     return filtered_array
 
 def minfilter(img, kernel):
@@ -54,15 +54,15 @@ def minfilter(img, kernel):
     filtered_array = np.ones((img.shape)) * 300
     kernel_size = kernel
     assert kernel_size % 2 != 0
-    pading = kernel // 2
-    a = np.pad(img, ((pading, ), (pading, )), 'constant', constant_values=(300, 300))
-    h_s, w_s = 0 + pading, 0 + pading
+    padding = kernel // 2
+    a = np.pad(img, ((padding, ), (padding, )), 'constant', constant_values=(300, 300))
+    h_s, w_s = 0 + padding, 0 + padding
     for i in range(h):
         for j in range(w):
             center = (h_s + i, w_s + j)
             if a[center] != -1:
-                min_ele = np.amin(a[center[0] - pading: center[0] + pading + 1, center[1] - pading: center[1] + pading + 1])
-                filtered_array[center[0] - pading, center[1] - pading] = min_ele
+                min_ele = np.amin(a[center[0] - padding: center[0] + padding + 1, center[1] - padding: center[1] + padding + 1])
+                filtered_array[center[0] - padding, center[1] - padding] = min_ele
     return filtered_array
 def get_result(background, origin):
     enchanced = origin - background
@@ -95,7 +95,10 @@ if __name__ == "__main__":
     filter_size1 = args.size1
     filter_size2 = filter_size1 if args.size2 is None else args.size2
     img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+    import time
+    t0 = time.time()
     result = run(img,filter_size1, filter_size2, mode)
+    print('takes {} s'.format(time.time() - t0))
     cv2.imwrite('images/middle.jpg', img)
     cv2.imwrite(output, result)
     if args.show_flag:
