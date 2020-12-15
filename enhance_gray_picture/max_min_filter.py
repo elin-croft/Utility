@@ -44,6 +44,6 @@ if __name__ == "__main__":
     img = cv2.imread('images/elsa.jpg',0)
     import time
     t0 = time.time()
-    out = maxfilter(img, 11)
+    out = maxfilter(img, 31)
     print('takes {}s'.format(time.time() - t0))
     print(out.shape)

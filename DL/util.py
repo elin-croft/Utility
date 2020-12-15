@@ -18,9 +18,9 @@ def predict(input, labels:torch.Tensor):
     return result, label, correct
 
 def load_dataset(root, transform,
-                batch_size=32, shuffle=True, 
-                dataset_type='folder', 
-                *args, **kwargs):
+                 batch_size=32, shuffle=True, 
+                 dataset_type='folder', 
+                 *args, **kwargs):
     """
     param
     dataset_type: str
@@ -46,12 +46,8 @@ def load_dataset(root, transform,
 
     return data, dataset
 
-def init_weights(module):
-    if isinstance(module, nn.Conv2d):
-        nn.init.xavier_normal_(module.weight.data)
-        
-        if module.bias is not None:
-            nn.init.constant_(module.bias.data, 0.20000000298)
+def init_model(model, func):
+    model.apply(func)
 
 def eval_model(model, data, classes, device):
     info = {}
@@ -76,13 +72,8 @@ def eval_model(model, data, classes, device):
         info.setdefault(_class, {})['TP'] = correct.count(index)
         info[_class]['FP'] = results.count(index) - correct.count(index)
         nagitive = len(results) - results.count(index)
-        #print('nagitive {}'.format(nagitive))
         info[_class]['TN'] = len(correct) - correct.count(index)
         info[_class]['FN'] = nagitive - len(correct) + correct.count(index)
-        #print(info[_class]['TP'])
-        #print(info[_class]['FP'])
-        #print(info[_class]['TN'])
-        #print(info[_class]['FN'])
         try:
             print('| {} | acc: {} | recall: {} |'.format(_class, info[_class]['TP']/(info[_class]['TP'] + info[_class]['FP']), info[_class]['TP']/(info[_class]['TP'] + info[_class]['FN'])))
         except ZeroDivisionError as e:
