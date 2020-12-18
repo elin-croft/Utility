@@ -7,13 +7,34 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 
 def predict(input, labels:torch.Tensor):
+    """
+    Parameters
+    -----------
+
+    input: Tensor shape (n, k) where n is batch number and k is number of classes
+        output of nerual network
+    
+    labels: Tensor shape (n, )
+        true classes of batch 
+    
+    Return
+    ----------
+    result: list
+        inference results
+
+    label: list
+        true classes
+
+    correct: list
+        correct results
+
+    """
     result = torch.argmax(input, dim=1).tolist()
     correct = []
     label = labels.tolist()
     for det, gt in zip(result, label):
         if det == gt:
             correct.append(det)
-    # print('acc: {}%'.format(correct/len(result) * 100))
 
     return result, label, correct
 
@@ -22,10 +43,18 @@ def load_dataset(root, transform,
                  dataset_type='folder', 
                  *args, **kwargs):
     """
-    param
+    Parameters
+    -----------
+
     dataset_type: str
         should be voc , coco, cifar, minst or folder
     
+    Return
+    ----------
+    data: Dataloader
+
+    dataset: torchvision.dataset
+
     """
     if dataset_type == 'folder':
         dataset = datasets.ImageFolder(root, transform=transform)
@@ -47,9 +76,24 @@ def load_dataset(root, transform,
     return data, dataset
 
 def init_model(model, func):
+    """
+    Parameters
+    -----------
+
+    model: nn.Module
+        your model
+    
+    func: functional
+        your initail function
+    """
     model.apply(func)
 
-def eval_model(model, data, classes, device):
+def eval_model(model, data, classes, device='cpu'):
+    """
+    model: nn.Module
+    
+    data: Dataloader
+    """
     info = {}
     model.eval()
     results = []
@@ -84,10 +128,51 @@ def eval_model(model, data, classes, device):
             print(_class + ' FN: {}'.format(info[_class]['FN']))
     return info
 
-def load_model(model, weight, device):
+def load_model(model, weight, device, flavour='normal'):
+    """
+    Parameters
+    -----------
+
+    model: nn.Module
+
+    weight: str
+        path to you .pth or .pt file
+    
+    device:str
+        set your model to cpu or gpu
+
+    flavour:str
+        if your .pth has other parameters like mean or std or classer you should choose compressed
+        
+        e.g.
+        pthFile = torch.load(weight)
+        state_dict = pthFile['state_dict']
+        mean = stat_dict = pthFile=['mean']
+
+    
+    Return
+    --------
+
+    compressed_param:ditc
+        all parameters that is compressed in pth file execpt state_dict
+
+    """
+    assert 'cpu' in device or "cuda" in device
     model.to(device=device).eval()
-    model.load_state_dict(torch.load(weight))
-    return model
+    model_data = torch.load(weight)
+    compressed_param = None
+    if flavour == 'normal':
+        model.load_state_dict(model_data)
+    elif flavour == 'compressed':
+        try:
+            state_dict = model_data['state_dict']
+        except KeyError as e:
+            print("your weight file don't have statc dict which is the real weight")
+        model.load_state_dict(state_dict)
+        model_data.pop('state_dict')
+        compressed_param = {k: v for k, v in model_data.items()}
+
+    return model, compressed_param
 
 def save_model(model, root, epoch_num, flavour='normal', *args, **kwagrs):
     """
