@@ -119,7 +119,9 @@ def eval_model(model, data, classes, device='cpu'):
         info[_class]['TN'] = len(correct) - correct.count(index)
         info[_class]['FN'] = nagitive - len(correct) + correct.count(index)
         try:
-            print('| {} | acc: {} | recall: {} |'.format(_class, info[_class]['TP']/(info[_class]['TP'] + info[_class]['FP']), info[_class]['TP']/(info[_class]['TP'] + info[_class]['FN'])))
+            print('| {} | acc: {} | recall: {} |'.format(_class, info[_class]['TP']/(info[_class]['TP'] 
+                + info[_class]['FP']), info[_class]['TP']/(info[_class]['TP'] 
+                + info[_class]['FN'])))
         except ZeroDivisionError as e:
             print(_class + " is not ready for checking acc and recall")
             print(_class + ' TP: {}'.format(info[_class]['TP']))
@@ -167,7 +169,7 @@ def load_model(model, weight, device, flavour='normal'):
         try:
             state_dict = model_data['state_dict']
         except KeyError as e:
-            print("your weight file don't have statc dict which is the real weight")
+            print("your weight file doesn't have statc dict which is the real weight")
         model.load_state_dict(state_dict)
         model_data.pop('state_dict')
         compressed_param = {k: v for k, v in model_data.items()}
