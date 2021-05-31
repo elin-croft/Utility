@@ -38,16 +38,18 @@ def predict(input, labels:torch.Tensor):
 
     return result, label, correct
 
-def load_dataset(root, transform,
+def load_dataset(root, transform, *args,
                  batch_size=32, shuffle=True, 
                  dataset_type='folder', 
-                 *args, **kwargs):
+                 **kwargs):
     """
     Parameters
     -----------
 
     dataset_type: str
         should be voc , coco, cifar, minst or folder
+        if you're using voc dataset then you have to pass a param as year = 2007 or 2012
+        if you're using coco dataset then you have to pass a param as type = 'detection' or 'caption'
     
     Return
     ----------
@@ -60,13 +62,15 @@ def load_dataset(root, transform,
         dataset = datasets.ImageFolder(root, transform=transform)
 
     elif dataset_type == 'voc':
-        year = kwargs['year']
-        image_set = kwargs['image_set']
+        year = kwargs.get('year', 2007)
+        image_set = kwargs.get('image_set', 'train')
         dataset = datasets.VOCDetection(root, year=year, image_set=image_set, transform=transform)
+
     elif dataset_type == 'coco':
+        assert 'type' in kwargs and 'annfile' in kwargs
         annfile = kwargs['annfile']
         type=kwargs['type']
-        if type == 'detect':
+        if type == 'detection':
             dataset = datasets.CocoDetection(root, annFile=annfile, transform=transform)
         elif type == 'caption':
             dataset = datasets.CocoCaptions(root, annFile=annfile, transform=transform)
@@ -176,7 +180,7 @@ def load_model(model, weight, device, flavour='normal'):
 
     return model, compressed_param
 
-def save_model(model, root, epoch_num, flavour='normal', *args, **kwagrs):
+def save_model(model, root, epoch_num, *args, flavour='normal', **kwagrs):
     """
     save model
     Parameters
