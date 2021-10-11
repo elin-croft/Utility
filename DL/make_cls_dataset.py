@@ -2,11 +2,18 @@ import os, sys
 import random
 import shutil
 
-def get_scripe(total, k):
+#######################################
+####TODO; add stratified sampling #####
+#######################################
+
+def get_index(total, k):
     scripe = random.sample(range(total), k)
     return scripe
 
 def split_dataset(root):
+    """
+    for each class
+    """
     files = os.listdir(root)
     data_files = [os.path.join(root, i) for i in files if i.endswith('.jpg')]
     file_len = len(data_files)
@@ -14,11 +21,11 @@ def split_dataset(root):
     val_len = int((file_len - test_len) * 0.2)
     train_len = int(file_len - test_len - val_len)
     print("total {}; train {}; test {}; val {}".format(file_len, train_len, test_len, val_len))
-    test = get_scripe(file_len, test_len)
+    test = get_index(file_len, test_len)
     test_files = [data_files[i] for i in test]
 
     train_val_files = [i for i in data_files if i not in test_files]
-    val = get_scripe(file_len - test_len, val_len)
+    val = get_index(file_len - test_len, val_len)
     val_files = [train_val_files[i] for i in val]
     train_files = [i for i in train_val_files if i not in val_files]
     return train_files, test_files, val_files

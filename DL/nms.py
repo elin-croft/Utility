@@ -30,7 +30,7 @@ def nms_cpu(dets:np.array, iou_thresh:float):
         intersection = w * h
         ious = (intersection) / (area[i] + area[order[1:]] - intersection)
         index = np.where(ious <= iou_thresh)[0]
-        order = order[index + 1]
+        order = order[index + 1] # area[order[1:]] is shifted to left by 1
     return keep
 
 def main():
@@ -40,7 +40,8 @@ def main():
                     [20,38,82,88,0.96],
                     [200,380,282,488,0.9],
                     [19,38,75,91, 0.8]])
-    nms_cpu(dets, 0.7)
+    keep = nms_cpu(dets, 0.7)
+    print(keep)
 
 if __name__ == '__main__':
     main()

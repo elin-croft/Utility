@@ -43,7 +43,7 @@ def train(model, train_data, val_data, classes, device,
             loss1 = F.cross_entropy(main_out, label_train)
             loss2 = F.cross_entropy(aux1_out, label_train)
             loss3 = F.cross_entropy(aux2_out, label_train)
-            loss = loss1 + 0.3 * (loss2 + loss3)
+            loss = loss1 + 0.3 * (loss2 + loss3) + 0.5 * regular
 
             # predict(output, label)
             if batch % 10 == 0:
