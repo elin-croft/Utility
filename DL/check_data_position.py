@@ -1,6 +1,7 @@
 import os, sys
 import cv2
 
+import tqdm
 import numpy as np
 
 try:
@@ -8,18 +9,22 @@ try:
 except ModuleNotFoundError as e:
     from xml.etree.ElementTree import ElementTree
 
-def draw_boxes(dataset_path, flavour=None):
+def draw_boxes(dataset_path, fix="", dst=None, flavour=None):
+    folderName = os.path.split(dataset_path)[-1]
+    savePath = os.path.join(dataset_path, 'show_bbox') if dst is None else os.path.join(dst, folderName, 'show_bbox')
     et = ElementTree()
+    annoPath = None
+    imgPath = None
     if flavour == 'std_voc':
         annoPath = 'data/VOCdevkit/VOC2007/Annotations'
         imgPath = 'data/VOCdevkit/VOC2007/JPEGImages'
-    files = os.listdir(os.path.join(dataset_path, annoPath))
-    for xml_file in files:
+    files = os.listdir(os.path.join(dataset_path, fix, annoPath))
+    print("ready to process pictures")
+    for xml_file in tqdm.tqdm(files):
         if xml_file.endswith('.xml'):
-            img = cv2.imread(os.path.join(dataset_path, imgPath, xml_file[:-4] + '.jpg'))
-            et.parse(os.path.join(dataset_path, annoPath, xml_file))
+            img = cv2.imread(os.path.join(dataset_path, fix, imgPath, xml_file[:-4] + '.jpg'))
+            et.parse(os.path.join(dataset_path, fix, annoPath, xml_file))
             root = et.getroot()
-            savePath = os.path.join(dataset_path, 'show_bbox')
             for item in root.iter('object'):
                 tyepId = item.find('name').text
                 for bbox in item.iter('bndbox'):
@@ -36,8 +41,14 @@ def draw_boxes(dataset_path, flavour=None):
                 if not os.path.exists(savePath):
                     os.makedirs(savePath)
                 cv2.imwrite(os.path.join(savePath, xml_file[:-4] + '_checked.jpg'), img)
+    print("done")
 
 
 if __name__ == "__main__":
     root = sys.argv[1]
-    draw_boxes(root, flavour='std_voc')
+    dst = None
+    if len(sys.argv) > 2:
+        dst = sys.argv[2]
+    fix = "mmdetection"
+    root = root[:-1] if root[-1] == '/' else root
+    draw_boxes(root, fix=fix, dst=dst, flavour='std_voc')
