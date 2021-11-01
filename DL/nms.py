@@ -1,6 +1,6 @@
 import numpy as np
 
-def nms_cpu(dets, iou_thresh:float):
+def nms_cpu(dets:np.ndarray, iou_thresh:float):
     """
     (0, 0) is at top left corner
     dets: numpy array
