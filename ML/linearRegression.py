@@ -2,7 +2,6 @@ import os, sys
 
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import SCORERS
 
 data = np.array([[6], [8], [10], [14], [18]]).reshape(-1, 1)
 label = [7, 9, 13, 17.5, 18]
@@ -46,11 +45,15 @@ class LR:
         """
         x should be colume vector
         """
+        if isinstance(x, list):
+            dim = 1
+            if isinstance(x[0], list):
+                dim = len(x[0])
+            x = np.array(x).reshape(-1, dim)
+
         if isinstance(self.model, LinearRegression):
             return self.model.predict(x)
         else:
-            if isinstance(x, list):
-                x = np.array(x).reshape(-1, self.model.shape[0])
             res = x.dot(self.model)
             res = np.squeeze(res)
             return res.tolist()
@@ -72,7 +75,7 @@ class LR:
 model = LR(epoch=100)
 model.train(data, label)
 res = model.predict([12])
-x_test = [8, 9, 11, 16, 12]
+x_test = [[8], [9], [11], [16], [12]]
 y_test = [11, 8.5, 15, 18, 11]
 res = model.predict(x_test)
 print(res)
