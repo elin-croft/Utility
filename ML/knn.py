@@ -38,8 +38,6 @@ class KNN:
             self.data = x
     
     def native(self, x):
-        # distance = np.sum((self.data - x)**2, axis=1)
-        # index = distance.argsort()[:self.model]
         dis = x[:, :, np.newaxis] - self.data.transpose(1, 0)[np.newaxis, :, :]
         dis = np.sum(dis**2, axis=1)
         index = dis.argsort(axis=1)[:, :self.model]
@@ -53,12 +51,12 @@ class KNN:
     def predict(self, x):
         if isinstance(self.model, KNeighborsClassifier):
             res_binary = self.model.predict(x)
-            res = self.transformer.inverse_transform(res_binary)
+            res = self.transformer.inverse_transform(res_binary).tolist()
         else:
             res = self.native(x)
         return res
 
-model = KNN(3, flavor='sklearn')
+model = KNN(3, flavor='common')
 model.fit(data, label)
 sample = np.array([[155, 70]])
 res = model.predict(sample)
